@@ -149,25 +149,31 @@
 
 <script>
 function updateDB(){
-	// var ids = ["parcel_id", "address_id", "event_id", "event_type_id", "person_id"];
-	// // var ids = ["parcel_id"];
+	var ids = ["parcel_id", "address_id", "event_id", "event_type_id", "person_id"];
+	// var ids = ["parcel_id"];
 
-	// // for (var i=0; i<ids.length; i++) {
+	for (var i=0; i<ids.length; i++) {
 	// for (var i=0; i<1; i++){
-	// 	var input_tags = $("input[" + ids[i] + "]");
-	// 	console.log(input_tags);
-	// 	for (var j=0; j<input_tags.length; j++) {
-	// 		console.log(input_tags[j]);
-	// 		console.log(input_tags[j].attr(ids[i]));
-	// 	}
-	// }
+		var input_tags = $("input[" + ids[i] + "]");
+		if (ids[i] == "parcel_id") {
+			console.log("This is parcel_id");
+		}
+		else if (ids[i] == "address_id") {
+			console.log("This is address id");
+		}
+		// console.log(input_tags);
+		for (var j=0; j<input_tags.length; j++) {
+			console.log(input_tags[j]);
+			// console.log(input_tags[j].attr(ids[i]));
+		}
+	}		
 	// var parcel_t = $("input[parcel_id]");
 	// var address_t = $("input[address_id]");
 	// var event_t = $("input[event_id]");
 	// var event_type_t = $("input[event_type_id]");
-	var person_t = $("input[person_id]");
+	// var person_t = $("input[person_id]");
 
-	console.log(person_t[0]);
+	// console.log(person_t[0]);
 
 	// var multiple_ts = [parcel_t, address_t, event_t, event_type_t, person_t];
 
