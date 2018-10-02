@@ -8,7 +8,7 @@
 	<link rel="stylesheet" href="auto_complete_form.css">
 
 	<!-- Bootstrap CSS -->
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+	<!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous"> -->
 
 	<!-- Font Awesome -->
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
@@ -17,6 +17,7 @@
 
 	<?php
 	require '../credentials.inc.php';
+	include 'edit_db_query.php';
 	include 'edit_dropdown_names.php';
 
 	ini_set('display_errors', 1);
@@ -46,7 +47,7 @@
 	$address_info = pg_fetch_all($result);
 
 	$query = "SELECT e.event_id, e.response, e.extra_information, e.date, e.price, 
-					et.id as event_type_id, et.type, epa.role,
+					et.id as event_type_id, et.type, epa.id as event_asso_id, epa.role,
 					peo.person_id, peo.name
 			FROM humanface.parcels p
             	JOIN humanface.events e on p.parcel_id = e.parcel_id
@@ -59,7 +60,7 @@
 	$event_info = pg_fetch_all($result);
 
 	echo "<pre>";
-	print_r($parcel_info[0]);
+	print_r($address_info);
 	echo "</pre>";
 
 	# Extracting properties
@@ -80,51 +81,69 @@
 			<div class="col-md-12" role="titlebar" id="titlebar">
 	      		<div class="section-title"><h3>Parcel Information</h3></div>
 	    	</div>
+	    	<!-- Basic Parcel Information -->
       		<div class="form-group col-md-3">
       			<!--Iterate the parcel_info array -->
-      			<?php foreach ($parcel_info[0] as $key => $value) { if ($key == 'parcel_id') { continue;}?>
-  					<label for="<?php echo $key?>"><?php echo $key;?><small class="required">*</small></label>
-        			<input type="text" class="form-control" parcel_id=<?php echo $parcel_info[0]['parcel_id'];?> for="<?php echo $key;?>" value = "<?php echo trim($value);?>" required minlength="1">
-	        	<?php } for ($i=0; $i<sizeof($address_info); $i++) { foreach($address_info[$i] as $key => $value) { if ($key == 'address_id') {continue;}?>
-	        		<label for="<?php echo $key?>"><?php echo $key;?></label>
-        			<input type="text" class="form-control" for="<?php echo $key;?>" address_id=<?php echo $address_info[$i]['address_id'];?> value = "<?php echo trim($value);?>">
-	        	<?php }} ?>
-    		</div>    
-			<div class="col-md-12" role="titlebar"  id="titlebar">
-	      		<div class="section-title"><h3> </h3></div>
-	    	</div>
-	    	<?php for ($i=0; $i<sizeof($event_info); $i++) {
+      			<?php $i=0; foreach ($parcel_info[0] as $key => $value){ if($key == 'parcel_id'){continue;} ?>
+  				<label for="<?php echo $key?>"><?php echo $key;?><small class="required">*</small></label>
+  				<?php if($key != 'land_use') { ?>
+        		<input type="text" class="parcel" id="<?php echo 'parcel' . $i;?>" parcel_id=<?php echo $parcel_info[0]['parcel_id'];?> for="<?php echo $key;?>" value = "<?php echo trim($value);?>" required minlength="1">
+        		<?php } else { ?>
+    			<input list="land-usage" type="text" class="parcel" id="<?php echo 'parcel' . $i;?>" parcel_id="<?php echo $parcel_info[0]['parcel_id'];?>" for="land_use" value="<?php echo trim($parcel_info[0]['land_use']);?>" required minlength="1">
+  				<datalist id="land-usage">
+  					<option value="residential">
+  					<option value="commercial">
+  				</datalist> 
+  				<?php } $i++; } ?>
+  			</div>
+
+      		<!-- Address Information -->
+      		<div class="form-group col-md-3">
+	        	<?php $index=0; for ($i=0; $i<sizeof($address_info); $i++) { foreach($address_info[$i] as $key => $value) { if ($key == 'address_id') {continue;}?>
+        		<label for="<?php echo $key?>"><?php echo $key;?></label>
+    			<input type="text" class="form-control" id="<?php echo 'address' . $index;?>" address_id="<?php echo $address_info[$i]['address_id'];?>" for="<?php echo $key;?>" value = "<?php echo trim($value);?>">
+	        	<?php $index++;}} ?>
+    		</div>
+
+    		<!-- Event Information -->
+			<div class="form-group col-md-3">
+	    	<?php $index=0; for ($i=0; $i<sizeof($event_info); $i++) {
 	    		foreach($event_info[$i] as $key => $value) { 
-	    			if ($key == 'event_id' || $key == 'event_type_id' || $key == 'person_id') {
+	    			if ($key == 'event_id' || $key == 'event_type_id' || $key == 'person_id' || $key == 'event_asso_id') {
 					continue; }?>
-				<div class="col-md-12" role="events"  id="role-events">
+				<div class="col-md-12" role="events" id="role-events">
 				<?php if ($key == 'name') { ?>
 					<label for="<?php echo $key?>"><?php echo $key;?><small class="required">*</small></label>
 					<form autocomplete="off" action="/action_page.php">
 					  <div class="autocomplete" style="width:300px;">
-					    <input class="namecell" type="text" person_id="<?php echo $event_info[$i]['person_id'];?>" value="<?php echo trim($value);?>">
+					    <input class="namecell" type="text" id="<?php echo 'person' . $index;?>" person_id="<?php echo $event_info[$i]['person_id'];?>" value="<?php echo trim($value);?>">
 					  </div>
 					</form>
-		    <?php } else { ?>
+		    	<?php } else { ?>
 		        	<label for="<?php echo $key?>"><?php echo $key;?>
 		        	<?php if (!($key == 'response' || $key == 'extra_information')) {?>
 		        		<small class="required">*</small>
 		        	<?php } ?></label>
-        			<input type="text" class="form-control" for="<?php echo $key;?>"
-        			<?php if ($key == 'response' || $key == 'extra_information' 
+		        	<?php if ($key == 'role') { ?>
+		    		<font color="red">If you want to change person, do not touch role.</font>
+		    		<?php } ?>
+        			<input type="text" class="form-control" id=
+        				<?php if ($key == 'response' || $key == 'extra_information' 
         				|| $key == 'date' || $key == 'price') {
-        					echo 'event_id=' . $event_info[$i]['event_id'];
-        					} elseif ($key == 'type' || $key == 'role') {
-        					echo 'event_type_id=' . $event_info[$i]['event_type_id'];
-        					} elseif ($key == 'person_id') {
-        					echo 'person_id=' . $event_info[$i]['person_id'];
-        			}?> value = "<?php echo trim($value);?>" 
+        					echo 'event' . $index . ' ' . 'event_id=' . $event_info[$i]['event_id'];
+        				} elseif ($key == 'type') {
+        					echo 'event_type' . $index . ' ' . 'event_id=' . $event_info[$i]['event_id'] . ' ' . 'event_type_id=' . $event_info[$i]['event_type_id'];
+        				} else if ($key == 'role') {
+        					// echo 'event_asso' . $index . ' ' . 'event_asso_id=' . $event_info[$i]['event_asso_id'] . ' ' . 'event_type_id=' . $event_info[$i]['event_type_id'];
+        			}?> for="<?php echo $key;?>" value = "<?php echo trim($value);?>" 
     				<?php if (!($key == 'response' || $key == 'extra_information')) {?>
         				required minlength="1" <?php }?>>
         			<?php } ?>
 	        	</div>
-			<?php }} ?>
+			<?php $index++;}} ?>
+			</div>
 
+			<!-- Submit Button -->
 	        <div class="col-md-12" role="submit-titlebar"  id="role-submit-titlebar">
 	            <div class="section-title"><h3>Submit this Entry</h3></div>
 	        </div>
@@ -149,22 +168,148 @@
 
 <script>
 function updateDB(){
-	var ids = ["parcel_id", "address_id", "event_id", "event_type_id", "person_id"];
-	// var ids = ["parcel_id"];
+	// var ids = ["parcel_id", "address_id", "event_id", "event_type_id", "person_id"];
+	var ids = ["event_type_id"];
 
 	for (var i=0; i<ids.length; i++) {
-	// for (var i=0; i<1; i++){
-		var input_tags = $("input[" + ids[i] + "]");
+		var input_tags = $("[" + ids[i] + "]");
 		if (ids[i] == "parcel_id") {
-			console.log("This is parcel_id");
-		}
-		else if (ids[i] == "address_id") {
-			console.log("This is address id");
-		}
-		// console.log(input_tags);
-		for (var j=0; j<input_tags.length; j++) {
-			console.log(input_tags[j]);
-			// console.log(input_tags[j].attr(ids[i]));
+			// for (var j=0; j<input_tags.length; j++) {
+			// 	var id_value=input_tags[j].getAttribute("id");
+			// 	// input_tags[j].setAttribute("value", $("[" + ids[i] + "][for='" + col + "']").val());
+			// 	input_tags[j].setAttribute("value", $("#" + id_value).val());
+			// }
+			// var p_key = input_tags[0].getAttribute("parcel_id");
+			// var block_no = input_tags[0].getAttribute("value");
+			// var parcel_no = input_tags[1].getAttribute("value");
+			// var ward_no = input_tags[2].getAttribute("value");
+			// var land_use = input_tags[3].getAttribute("value");
+
+			// $.ajax({
+			// 	type:"GET",
+			// 	async:true,
+			// 	url:"edit_db_update.php",
+			// 	data: {
+			// 		action: 'parcel',
+			// 		parcel_id: p_key,
+			// 		block_no: block_no,
+			// 		parcel_no: parcel_no,
+			// 		ward_no: ward_no,
+			// 		land_use: land_use
+			// 	}
+			// })
+		} else if (ids[i] == "address_id") {
+			// for (var j=0; j<input_tags.length; j++) {
+			// 	var id_value=input_tags[j].getAttribute("id");
+			// 	// input_tags[j].setAttribute("value", $("[" + ids[i] + "][for='" + col + "']").val());
+			// 	input_tags[j].setAttribute("value", $("#" + id_value).val());
+			// }
+			// for (var k=0; k<input_tags.length; k+=2){
+
+			// 	var p_key = input_tags[k].getAttribute("address_id");
+			// 	var st_num = input_tags[k].getAttribute("value");
+			// 	var st_name = input_tags[k+1].getAttribute("value");
+
+			// 	if (st_num != null && st_name != null) {
+			// 		$.ajax({
+			// 			type:"GET",
+			// 			async:true,
+			// 			url:"edit_db_update.php",
+			// 			data: {
+			// 				action: 'address',
+			// 				address_id: p_key,
+			// 				st_num: st_num,
+			// 				st_name: st_name
+			// 			}
+			// 		})
+			// 	}
+			// }
+		} else if (ids[i] == "event_id") {
+			// for (var j=0; j<input_tags.length; j++) {
+			// 	var id_value=input_tags[j].getAttribute("id");
+			// 	// input_tags[j].setAttribute("value", $("#" + id_value).val());
+			// 	console.log(input_tags[j]);
+			// }
+			// for (var k=0; k<input_tags.length; k+=4){
+				// var p_key = input_tags[k].getAttribute("event_id");
+				// var response = input_tags[k].getAttribute("value");
+				// var extra_information = input_tags[k+1].getAttribute("value");
+				// var date = input_tags[k+2].getAttribute("value");
+				// var price = input_tags[k+3].getAttribute("value");
+
+				// console.log(p_key);
+				// console.log(response);
+				// console.log(extra_information);
+				// console.log(date);
+				// console.log(price);
+				// console.log("------------");
+
+			// 	if (date != null && price != null) {
+					// $.ajax({
+					// 	type:"GET",
+					// 	async:true,
+					// 	url:"edit_db_update.php",
+					// 	data: {
+					// 		action: 'event',
+					// 		event_id: p_key,
+					// 		response: response,
+					// 		extra_information: extra_information,
+					// 		date: date,
+					// 		price: price
+					// 	}
+					// })
+			// 	}
+			// }
+		} else if (ids[i] == "event_type_id") {
+			for (let j=0; j<input_tags.length; j++) {
+				var id_value=input_tags[j].getAttribute("id");
+				// input_tags[j].setAttribute("value", $("[" + ids[i] + "][for='" + col + "']").val());
+				input_tags[j].setAttribute("value", $("#" + id_value).val());
+				// console.log(input_tags[j]);
+				// console.log(input_tags[j].getAttribute("value"));
+
+				$.ajax({
+					type:"GET",
+					asyne:true,
+					url:"edit_db_update.php",
+					data: {
+						action: 'type_request',
+						type: input_tags[j].getAttribute("value")
+					},
+					dataType: "json"
+				}).done(function(data){
+					// console.log(data[0]["event_type_id"]);	
+					let new_id = data[0]["event_type_id"];
+					input_tags[j].setAttribute("event_type_id", new_id);
+				})
+			}
+
+			for (let k=0; k<input_tags.length; k++){
+				var p_key = input_tags[k].getAttribute("event_type_id");
+				var e_id = input_tags[k].getAttribute("event_id");
+
+				$.ajax({
+					type:"GET",
+					async:true,
+					url:"edit_db_update.php",
+					data: {
+						action: 'event_type',
+						et_id: p_key,
+						e_id: e_id
+					}
+				})
+
+			}
+
+		} else if (ids[i] == "person_id") {
+			// for (var j=0; j<input_tags.length; j++) {
+			// 	var id_value=input_tags[j].getAttribute("id");
+			// 	// input_tags[j].setAttribute("value", $("[" + ids[i] + "][for='" + col + "']").val());
+			// 	input_tags[j].setAttribute("value", $("#" + id_value).val());
+			// }
+			for (var k=0; k<input_tags.length; k++){
+				console.log(input_tags[k]);
+			}
 		}
 	}		
 	// var parcel_t = $("input[parcel_id]");

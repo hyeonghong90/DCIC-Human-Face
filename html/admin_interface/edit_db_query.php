@@ -1,6 +1,6 @@
 <?php
 // Query function that creates different query based on its argument
-function query_request($q_request, $pid){
+function query_request($q_request, $p_key){
 	ini_set('display_errors', 1);
 	require '../credentials.inc.php';
 
@@ -13,12 +13,12 @@ function query_request($q_request, $pid){
 	if ($q_request == "parcel_request") {
 		$query = "SELECT p.parcel_id, p.block_no, p.parcel_no, p.ward_no, p.land_use
 			FROM humanface.parcels p
-			WHERE parcel_id = '" . $pid . "';";
-	} elseif ($q_request == "address_request") {
+			WHERE parcel_id = '" . $p_key . "';";
+	} else if ($q_request == "address_request") {
 		$query = "SELECT a.id as \"address_id\", a.st_num, a.st_name
 			FROM humanface.addresses a
-				WHERE parcel_id = '" . $pid . "';";
-	} elseif ($q_request == "event_request") {
+			WHERE parcel_id = '" . $p_key . "';";
+	} else if ($q_request == "event_request") {
 		$query = "SELECT e.event_id, e.response, e.extra_information, e.date, e.price, 
 					et.id as event_type_id, et.type, epa.role,
 					peo.person_id, peo.name
@@ -27,9 +27,13 @@ function query_request($q_request, $pid){
                 JOIN humanface.event_types et on e.type = et.id
                 JOIN humanface.event_people_assoc epa on e.event_id = epa.event_id
                 JOIN humanface.people peo on epa.person_id = peo.person_id
-			WHERE p.parcel_id = '" . $pid . "';";
-	} elseif($q_request == "name_request") {
+			WHERE p.parcel_id = '" . $p_key . "';";
+	} else if($q_request == "name_request") {
 		$query = "SELECT name FROM humanface.people;";
+	} else if($q_request == "land_request") {
+		$query = "SELECT DISTINCT land_use FROM humanface.parcels;";
+	} else if($q_request == "type_request") {
+		$query = "SELECT id FROM humanface.event_types WHERE id=" . $p_key . ";";
 	}
 	$result = pg_query($connect, $query);
 
