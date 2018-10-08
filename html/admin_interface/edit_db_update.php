@@ -1,4 +1,11 @@
 <?php
+function send_query($con, $q) {
+	$result = pg_query($con, $q);
+	if(!$result){
+		die("Error in SQL query: " . pg_last_error());
+	}
+	pg_free_result($result);
+}
 
 ini_set('display_errors', 1);
 require '../credentials.inc.php';
@@ -6,85 +13,97 @@ $connect = pg_connect('host=' . DBHOST . ' dbname=' . DBNAME . ' user=' . DBUSER
 if (!$connect){
 	die("Error in connection!");
 }
-$action = $_GET['action'];
-if ($action == "parcel") {
-	$parcel_id = $_GET['parcel_id'];
-	$block_no = $_GET['block_no'];
-	$parcel_no = $_GET['parcel_no'];
-	$ward_no = $_GET['ward_no'];
-	$land_use = $_GET['land_use'];
 
-	$query = "UPDATE humanface.parcels SET block_no=" . $block_no . ", parcel_no=" . $parcel_no . ", ward_no=" . $ward_no . ", land_use='" . $land_use . "' WHERE parcel_id=" . $parcel_id . ";";
+		// $person_query = "SELECT name FROM humanface.people;";
+		// $person_result = pg_query($connect, $person_query);
 
-} else if ($action == "address") {
-	$address_id = $_GET['address_id'];
-	$st_num = $_GET['st_num'];
-	$st_name = $_GET['st_name'];
+		// while ($row = pg_fetch_array($person_result)) {
+		// 	$person_name = array(
+		// 		"name" => trim($row['name'])
+		// 	);
+		// 	$people_names[] = $person_name;
+		// }	
+		// echo "<pre>";
+		// print_r($people_names);
+		// echo "</pre>";
 
-	$query = "UPDATE humanface.addresses SET st_num='" . $st_num . "', st_name='" . $st_name . "' WHERE id=" . $address_id . ";";
+// javascript object from edit page
+$a_parcel = $_POST;
 
-} else if ($action == "event") {
-	$event_id = $_GET['event_id'];
-	$response = $_GET['response'];
-	$ext_info = $_GET['extra_information'];
-	$date = $_GET['date'];
-	$price = $_GET['price'];
+foreach ($a_parcel as $key => $value) {
+	if ($key == 'parcel') {
+		$parcel_id = $value[0]['parcel_id'];
+		$block_no = $value[0]['block_no'];
+		$parcel_no = $value[0]['parcel_no'];
+		$ward_no = $value[0]['ward_no'];
+		$land_use = $value[0]['land_use'];		
 
-	$query = "UPDATE humanface.events SET response='" . $response . "', extra_information='" . $ext_info . "', date='" . $date . "', price=" . $price . " WHERE event_id=" . $event_id . ";";
+		$p_query = "UPDATE humanface.parcels SET block_no=" . $block_no . ", parcel_no=" . $parcel_no . ", ward_no=" . $ward_no . ", land_use='" . $land_use . "' WHERE parcel_id=" . $parcel_id . ";";
 
-} else if ($action == "event_type") {
-	$event_type_id = $_GET['et_id'];
-	$event_id = $_GET['e_id'];
+		send_query($connect, $p_query);
+	}
+	else if ($key == 'address') {
+		foreach ($value as $k => $v) {
+			$address_id = $v['address_id'];
+			$st_num = $v['st_num'];
+			$st_name = $v['st_name'];
 
-	$query = "UPDATE humanface.events SET type=" . $event_type_id . " WHERE event_id=" . $event_id . ";";
+			$a_query = "UPDATE humanface.addresses SET st_num='" . $st_num . "', st_name='" . $st_name . "' WHERE id=" . $address_id . ";";
 
-} else if ($action == "person") {
-
-} else if ($action == "type_request") {
-	$event_type = $_GET['type'];
-
-	$query = "SELECT id FROM humanface.event_types WHERE type='" . $event_type . "';";
-}
-
-// if ($q_request == "parcel_request") {
-// 		$query = "SELECT p.parcel_id, p.block_no, p.parcel_no, p.ward_no, p.land_use
-// 			FROM humanface.parcels p
-// 			WHERE parcel_id = '" . $p_key . "';";
-// 	} else if ($q_request == "address_request") {
-// 		$query = "SELECT a.id as \"address_id\", a.st_num, a.st_name
-// 			FROM humanface.addresses a
-// 			WHERE parcel_id = '" . $p_key . "';";
-// 	} else if ($q_request == "event_request") {
-// 		$query = "SELECT e.event_id, e.response, e.extra_information, e.date, e.price, 
-// 					et.id as event_type_id, et.type, epa.role,
-// 					peo.person_id, peo.name
-// 			FROM humanface.parcels p
-//             	JOIN humanface.events e on p.parcel_id = e.parcel_id
-//                 JOIN humanface.event_types et on e.type = et.id
-//                 JOIN humanface.event_people_assoc epa on e.event_id = epa.event_id
-//                 JOIN humanface.people peo on epa.person_id = peo.person_id
-// 			WHERE p.parcel_id = '" . $p_key . "';";
-// 	} else if($q_request == "name_request") {
-// 		$query = "SELECT name FROM humanface.people;";
-// 	} else if($q_request == "land_request") {
-// 		$query = "SELECT DISTINCT land_use FROM humanface.parcels;";
-// 	} else if($q_request == "type_request") {
-// 		$query = "SELECT id FROM humanface.event_types WHERE id=" . $p_key . ";";
-// 	}
-$result = pg_query($connect, $query);
-if(!$result){
-	die("Error in SQL query: " . pg_last_error());
-}
-
-if ($action == "type_request"){
-	while ($row = pg_fetch_array($result)) {
-			$data = array(
-				"event_type_id" => $row['id']
-			);
-			$datas[] = $data;
+			send_query($connect, $a_query);
 		}
-	echo json_encode($datas);
+	}
+	else if ($key == 'events') {
+		// person name case
+		$person_query = "SELECT name FROM humanface.people;";
+		$person_result = pg_query($connect, $person_query);
+
+		while ($row = pg_fetch_array($person_result)) {
+			$person_name = array(
+				"name" => trim($row['name'])
+			);
+			$people_names[] = $person_name;
+		}	
+
+		foreach ($value as $k => $v) {
+			$event_id = $v['event_id'];
+			$response = $v['response'];
+			$extra_information = $v['extra_information'];
+			$date = $v['date'];
+			$price = $v['price'];
+			$event_type_id = $v['event_type_id'];
+			$event_type = $v['event_type'];
+			$event_asso_id = $v['event_asso_id'];
+			$role = $v['role'];
+			$person_id = $v['person_id'];
+			$name = $v['name'];
+
+			$e_query = "UPDATE humanface.events SET response='" . $response . "', extra_information='" . $extra_information . "', date='" . $date . "', price=" . $price . ", type=" . $event_type_id . " WHERE event_id=" . $event_id . ";";
+
+			send_query($connect, $e_query);
+
+			if (array_search($name, array_column($people_names, 'name')) !== False) {
+				$peo_query = "UPDATE humanface.event_people_assoc SET person_id=" . $person_id  . ", role='" . $role . "' WHERE id=" . $event_asso_id . ";";
+				
+				send_query($connect, $peo_query);
+			}
+			else {
+				echo "name is NOT in the list";
+				$peo_query = "UPDATE humanface.people SET name='" . $name . "' WHERE person_id=" . $person_id . ";";
+				
+				send_query($connect, $peo_query);
+				
+			}
+		}
+	}
 }
-pg_free_result($result);
+
 pg_close($connect);
+
+
+// echo $a_parcel;
+// echo "<pre>";
+// print_r($a_parcel);
+// echo "</pre>";
 ?>
+
