@@ -4,13 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-  <link rel="stylesheet" href="main_php.css">
-
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
-
-  <!-- DataTables CSS -->
-  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
@@ -26,12 +21,22 @@
   if (!$connect){
   	die("Error in connection!:" . pg_last_error());
   }
+else{
+  echo "Successfully connected to database:" . " " . pg_dbname() . " on " . pg_host();
+  }
 
   //Querying Parcels Table Information
   $query = 'SELECT * FROM humanface.parcels';
   $par = pg_query($connect, $query);
   $row = pg_fetch_all($par);
   $num = pg_num_rows($par);
+
+  //Obtain Parcel ID when user selects Edit button in table
+  /*if($_GET['pid']){
+    $x = "SELECT * FROM humanface.parcels WHERE parcel_id = " . $_GET['pid'];
+    $p = pg_query($connect, $x);
+    $prow = pg_fetch_assoc($p);
+  }*/
   ?>
 
 </head>
@@ -148,19 +153,19 @@
 
   <br><br>
 <!-- Bootstrap Table-->
-  <table class="table table-light table-hover table-striped table-bordered table-responsive-md" id="table">
-    <thead class="thead-dark">
+  <table class="table table-light table-hover table-bordered table-responsive-md" id="table">
+    <thead class="thead-light">
       <tr>
         <!-- <th scope="col" class="pr-md-3 pr-5 text-center">
           <input class="form-check-input" type="checkbox">
           <label class="form-check-label" for = "checkbox"></label>
         </th> -->
         <th scope="col" class="text-center"></th>
-        <th class="text-center">Parcel ID <button class="btn btn-link"><i class="fas fa-sort"></i></button></th>
-        <th scope="col" class="text-center">Block Number <button class="btn btn-link"><i class="fas fa-sort"></i></button></th>
-        <th scope="col" class="text-center">Parcel Number <button class="btn btn-link"><i class="fas fa-sort"></i></button></th>
-        <th scope="col" class="text-center">Ward Number <button class="btn btn-link"><i class="fas fa-sort"></i></button></th>
-        <th scope="col" class="text-center">Land Use <button class="btn btn-link"><i class="fas fa-sort"></i></button></th>
+        <th class="text-center">Parcel ID <button class="btn btn-link" onclick="sort()"><i class="fas fa-sort"></i></button></th>
+        <th scope="col" class="text-center">Block Number <button class="btn btn-link" onclick="sort()"><i class="fas fa-sort"></i></button></th>
+        <th scope="col" class="text-center">Parcel Number <button class="btn btn-link" onclick="sort()"><i class="fas fa-sort"></i></button></th>
+        <th scope="col" class="text-center">Ward Number <button class="btn btn-link" onclick="sort()"><i class="fas fa-sort"></i></button></th>
+        <th scope="col" class="text-center">Land Use <button class="btn btn-link" onclick="sort()"><i class="fas fa-sort"></i></button></th>
       </tr>
     </thead>
     <tbody>
@@ -178,12 +183,12 @@
       <?php } ?>
     </tbody>
   </table>
+
 <!-- Bootstrap Table Pagination-->
 
-
-<div class="float-md-right paginated-table" id="paginated-table" ng-controller="pagination">
-  <pagination id="pag" total-items="87">
-    <ul class="pagination" id="pagination">
+<div class="float-md-right paginated-table" id="pagination">
+    <pagination class="pagination">
+    <ul class="pagination">
       <!-- Left Arrow -->
       <li class="page-item">
         <a class="page-link" href="#" aria-label="Previous">
@@ -204,9 +209,8 @@
         </a>
       </li>
     </ul>
-  </pagination>
-</div>
-
+    </pagination>
+    </div>
 <div class="card col-sm-3" id="postgres">
 <?php echo "There are " . $num . " rows in the " . pg_dbname() . " parcels table"; ?>
 </div>
@@ -224,24 +228,16 @@
 <!-- W3.JS JavaScript -->
 <script src="https://www.w3schools.com/lib/w3.js"></script>
 
-<!-- Angular JavaScript -->
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
-<script data-require="ui-bootstrap@*" data-semver="0.12.1" src="http://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.12.1.min.js"></script>
-
-
-
 <script>
-  //Javascript Code
-
   //JavaScript & jQuery Table Pagination, Sort, & Filter
-  window.onerror = function (msg, url, line) {
+  window.onerror = function(msg, url, line) {
                  alert("An error occurred.");
                  alert("Message: " + msg);
                  alert("url" + url);
                  alert("line number" + line);
               }
-
-  function pagination(){
+//Table pagination
+  function pagination() {
     $("table").each(function(){
       //Variables
       var page = 0;
@@ -253,45 +249,48 @@
       $pagi.trigger('repaginate');
       var numrows = $pagi.find('tbody tr').length;
       var numpages = Math.ceil(numrows/numpage);
-      var $pager = $('<div class = "pager"></div>');
+      var $pager = $('<div class = "pager float-md-right"></div>');
       for(var curpage = 0; curpage < numpages; curpage++){
-        $('<span class = "page-number"></span>').text(curpage + 1).bind('click',
+        $('<button class="page-number"></button>').text(curpage + 1).bind('click',
         {newPage: curpage},
         function(event) {
           page = event.data['newPage'];
+          console.log(page); //Prints selected page number onto the console
           $pagi.trigger('repaginate');
           $(this).addClass('active').siblings().removeClass('active');
         }).appendTo($pager).addClass('clickable');
       }
-      $pager.insertBefore($pagi).find('span.page-number:first').addClass('active');
+      $pager.insertBefore($pagi).find('button.page-number:first').addClass('active');
     });
-    //$("#pag a:first").addClass('active');
   }
 
-  /*function sort(table_id, sortColumn){
-    var tableData = document.getElementById('table').getElementsByTagName('tbody').item(0);
-      var rowData = tableData.getElementsByTagName('tr');
-      for(var i = 0; i < rowData.length - 1; i++){
-          for(var j = 0; j < rowData.length - (i + 1); j++){
-              if(Number(rowData.item(j).getElementsByTagName('td').item(sortColumn).innerHTML.replace(/[^0-9\.]+/g, "")) < Number(rowData.item(j+1).getElementsByTagName('td').item(sortColumn).innerHTML.replace(/[^0-9\.]+/g, ""))){
-                  tableData.insertBefore(rowData.item(j+1),rowData.item(j));
-              }
-          }
-      }
-}*/
-
-  //Search filter
+//Table Sort
+  function sort(){
+    var table, rows, dir;
+    table = document.getElementById("table");
+    rows = table.rows;
+    dir = "asc";
+    /*while(true){
+    for(var i = 1; i < rows.length; i++){
+      x = rows[i].getElementsByTagName("TD")[0];
+    }
+  }*/
+}
+//Search filter
   function filter(){
     var input, filter, table, tr, td, x, q;
       input = document.getElementById("input");
       filter = input.value;
       table = document.getElementById("table");
       tr = table.getElementsByTagName("tr");
+
       //Loop through all the table rows, and hide those that do not match the search query
       for(x = 0; x < tr.length; x++){
-        f = tr[x].getElementsByTagName("td")[5]; //Table filter
-        if(f){
-          if(f.innerHTML.indexOf(filter) > -1){
+        f = tr[x].getElementsByTagName("td"); //Table filter
+        if(f[1]){
+          if(f[1].innerHTML.indexOf(filter) > -1 || f[2].innerHTML.indexOf(filter) > -1
+              || f[3].innerHTML.indexOf(filter) > -1 || f[4].innerHTML.indexOf(filter) > -1
+              || f[5].innerHTML.indexOf(filter) > -1){
             tr[x].style.display = "";
           }
           else{
@@ -316,7 +315,7 @@
   $(document).ready(function(){
     //$('#table').DataTable(); //Initialize Datatable
     pagination();
-    //sort('table', 3);
+    sort();
     filter();
   }); //Waits until DOM elements are loaded and ready to execute
 
@@ -331,9 +330,7 @@
     $('#pagination').toggle();
     $('#postgres').toggle();
   });
-/*
-php link to edit interface add new column to table
-*/
+
 </script>
 </body>
 </html>
