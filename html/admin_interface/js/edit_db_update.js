@@ -1,9 +1,10 @@
 function updateDB(){
-	var property = new Object();
+	var property = new Object({action: 'edit'});
 
-	var ids = ["parcel", "address", "event", "people"];
+	var ids = ["parcel", "address", "event", "people", "extra"];
+	// var ids = ["people"];
 	for (var i=0; i<ids.length; i++) {
-		var input_tags = $("input[id^='" + ids[i] + "']");
+		var input_tags = $( "input[id^='" + ids[i] + "'], select[id^='" + ids[i] + "']");
 
 		// for (var j=0; j<input_tags.length; j++) {
 		// 	console.log(input_tags[j]);
@@ -49,13 +50,13 @@ function updateDB(){
 		} else if (ids[i] == "event") {
 			property.events = [];
 			for (var k=0; k<input_tags.length; k+=5){
-				var evt_id = input_tags[k].getAttribute("event_id");
-				var response = input_tags[k].getAttribute("value");
-				var extra_information = input_tags[k+1].getAttribute("value");
-				var date = input_tags[k+2].getAttribute("value");
-				var price = input_tags[k+3].getAttribute("value");
-				var evt_type_id = input_tags[k+4].getAttribute("event_type_id");
-				var evt_type = input_tags[k+4].getAttribute("value");
+				var evt_type_id = input_tags[k].getAttribute("event_type_id");
+				var evt_type = input_tags[k].getAttribute("value");
+				var evt_id = input_tags[k+1].getAttribute("event_id");
+				var date = input_tags[k+1].getAttribute("value");
+				var price = input_tags[k+2].getAttribute("value");
+				var response = input_tags[k+3].getAttribute("value");
+				var extra_information = input_tags[k+4].getAttribute("value");
 				
 				var evnt =
 				{
@@ -88,12 +89,39 @@ function updateDB(){
 
 				property.people.push(peo);
 			}
+		} else if (ids[i] == "extra") {
+			property.extra = [];
+			for (var k=0; k<input_tags.length; k+=2){
+				var evt_id = input_tags[k].getAttribute("event_id");
+				var new_role = input_tags[k].getAttribute("value");
+				var new_name = input_tags[k+1].getAttribute("value");
+
+				if (input_tags[k+1].getAttribute("person_id") != "") {
+					var new_person_id = input_tags[k+1].getAttribute("person_id");
+
+					var extra = 
+					{
+						event_id: evt_id,
+						role: new_role,
+						person_id: new_person_id,
+						name: new_name
+					}
+				} else {
+					var extra = 
+					{
+						event_id: evt_id,
+						role: new_role,
+						name: new_name
+					}
+				}
+				property.extra.push(extra);
+			}
 		}
 	}
 
 	// console.log(property);
 
-	$.post("edit_db_update.php", property).done(function(data){
-		console.log( data );
-	}, "string");
+	$.post("edit_db_update.php", property).done(function(){
+		 location.reload(true);
+	});
 }
