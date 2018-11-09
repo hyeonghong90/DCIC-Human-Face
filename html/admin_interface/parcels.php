@@ -133,7 +133,11 @@ else{
         data-placement="bottom">
         <i class="fas fa-table"></i>
       </button>
+<<<<<<< HEAD
       <button class="btn btn-dark"
+=======
+      <button class="btn btn-dark" onclick="sort()"
+>>>>>>> upstream/master
         data-toggle="popover"
         data-trigger="hover"
         data-content="sort table"
@@ -166,10 +170,17 @@ else{
         </th> -->
         <th scope="col" class="text-center"></th>
         <th class="text-center">Parcel ID <button class="btn btn-link" onclick="sort()"><i class="fas fa-sort"></i></button></th>
+<<<<<<< HEAD
         <th scope="col" class="text-center">Block Number <button class="btn btn-link"><i class="fas fa-sort"></i></button></th>
         <th scope="col" class="text-center">Parcel Number <button class="btn btn-link"><i class="fas fa-sort"></i></button></th>
         <th scope="col" class="text-center">Ward Number <button class="btn btn-link"><i class="fas fa-sort"></i></button></th>
         <th scope="col" class="text-center">Land Use <button class="btn btn-link"><i class="fas fa-sort"></i></button></th>
+=======
+        <th scope="col" class="text-center">Block Number <button class="btn btn-link" onclick="sort()"><i class="fas fa-sort"></i></button></th>
+        <th scope="col" class="text-center">Parcel Number <button class="btn btn-link" onclick="sort()"><i class="fas fa-sort"></i></button></th>
+        <th scope="col" class="text-center">Ward Number <button class="btn btn-link" onclick="sort()"><i class="fas fa-sort"></i></button></th>
+        <th scope="col" class="text-center">Land Use <button class="btn btn-link" onclick="sort()"><i class="fas fa-sort"></i></button></th>
+>>>>>>> upstream/master
       </tr>
     </thead>
     <tbody>
@@ -221,25 +232,41 @@ else{
 <br><br><br><br>
 
 <!-- Footer -->
+<<<<<<< HEAD
 <div class="footer">
 <footer class="page-footer font-small cyan darken-3">
+=======
+
+<!-- <footer class="page-footer font-small cyan darken-3">
+>>>>>>> upstream/master
   <div class="container">
     <div class="row">
         <div class="col-md-12 py-5">
           <div class="mb-5 flex-center">
+<<<<<<< HEAD
 
+=======
+            <i class="fab fa-github"></i>
+>>>>>>> upstream/master
           </div>
         </div>
     </div>
   </div>
+<<<<<<< HEAD
   </footer>
 </div>
+=======
+</footer> -->
+
+
+>>>>>>> upstream/master
   <!-- Footer -->
 <!-- Optional JavaScript -->
 <!-- jQuery first, then Popper.js, then Bootstrap JS -->
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+<<<<<<< HEAD
 
 <!-- W3.JS JavaScript -->
 <script src="https://www.w3schools.com/lib/w3.js"></script>
@@ -370,5 +397,9 @@ else{
   $('.alert').alert();
 
 </script>
+=======
+<!-- Javascript File -->
+<script type="text/javascript" src="js/script.js"></script>
+>>>>>>> upstream/master
 </body>
 </html>
