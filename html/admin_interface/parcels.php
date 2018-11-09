@@ -133,11 +133,7 @@ else{
         data-placement="bottom">
         <i class="fas fa-table"></i>
       </button>
-<<<<<<< HEAD
-      <button class="btn btn-dark"
-=======
       <button class="btn btn-dark" onclick="sort()"
->>>>>>> upstream/master
         data-toggle="popover"
         data-trigger="hover"
         data-content="sort table"
